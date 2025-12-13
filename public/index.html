@@ -10,12 +10,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div id="video-container" style="display: none; text-align: center; margin-bottom: 20px;">
+        <video id="psychologist-video" width="400" muted loop>
+            <!-- Замените src на ссылку на ваше видео -->
+            <source src="https://www.xn--h1aend.xn--p1ai/2jupriv.mp4" type="video/mp4">
+            Ваш браузер не поддерживает тег video.
+        </video>
+    </div>
+
     <div id="chat-container">
         <h1 class="neon-text">NeonChat // YandexGPT</h1>
         <ul id="messages"></ul>
         <form id="form" action="">
             <input id="input" autocomplete="off" placeholder="Введите сообщение..." /><button>Отправить</button>
         </form>
+        <div id="tts-controls" style="margin-top: 15px;">
+            <label for="gender-select">Голос:</label>
+            <select id="gender-select">
+                <option value="male">Мужской</option>
+                <option value="female">Женский</option>
+            </select>
+            <label for="voice-select" style="margin-left: 15px;">Диктор:</label>
+            <select id="voice-select"></select>
+        </div>
+        <div id="admin-controls" style="margin-top: 10px;">
+            <label for="video-upload">Выбрать видео-аватар:</label>
+            <input type="file" id="video-upload" accept="video/*">
+        </div>
+        <div id="video-gallery" style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+            <!-- Положите свои видео в папку 'public' и укажите пути к ним, например /my-video.mp4 -->
+            <video class="video-thumbnail" src="https://www.xn--h1aend.xn--p1ai/marianna-1.mp4" style="width: 120px; cursor: pointer;" muted loop autoplay title="Выбрать этот аватар"></video>
+            <video class="video-thumbnail" src="https://www.xn--h1aend.xn--p1ai/2jupriv.mp4" style="width: 120px; cursor: pointer;" muted loop autoplay title="Выбрать этот аватар"></video>
+            <!-- Можете добавить больше видео по аналогии -->
+        </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/client.js"></script>
