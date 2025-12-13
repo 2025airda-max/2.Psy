@@ -6,11 +6,10 @@ const input = document.getElementById('input');
 const messages = document.getElementById('messages');
 const videoContainer = document.getElementById('video-container');
 const video = document.getElementById('psychologist-video');
-const genderSelect = document.getElementById('gender-select');
 const voiceSelect = document.getElementById('voice-select');
 const videoUpload = document.getElementById('video-upload');
 const videoThumbnails = document.querySelectorAll('.video-thumbnail');
-const stopTtsBtn = document.getElementById('stop-tts-btn'); // New button
+const stopTtsBtn = document.getElementById('stop-tts-btn');
 
 // --- TTS State ---
 let voices = [];
@@ -18,57 +17,48 @@ let voices = [];
 // --- Functions ---
 
 /**
- * Populates the voice select dropdown based on available Russian voices and selected gender.
+ * Populates the voice select dropdown with all available Russian voices.
  */
 function populateVoiceList() {
-    const selectedGender = genderSelect.value;
+    // Filter for Russian voices
     voices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'ru-RU');
     
     voiceSelect.innerHTML = ''; // Clear existing options
 
-    const filteredVoices = voices.filter(voice => {
-        const voiceNameLower = voice.name.toLowerCase();
-        const isFemale = voiceNameLower.includes('female') || voiceNameLower.includes('женский') || voiceNameLower.includes('anna');
-        const voiceGender = isFemale ? 'female' : 'male';
-        return voiceGender === selectedGender;
-    });
-
-    if (filteredVoices.length > 0) {
-        filteredVoices.forEach(voice => {
+    if (voices.length > 0) {
+        voices.forEach(voice => {
             const option = document.createElement('option');
-            option.textContent = voice.name;
+            option.textContent = `${voice.name}`; // Display just the name
             option.setAttribute('data-name', voice.name);
             voiceSelect.appendChild(option);
         });
     } else {
         const option = document.createElement('option');
-        option.textContent = 'Нет голосов для этого пола';
+        option.textContent = 'Русские голоса не найдены';
         voiceSelect.appendChild(option);
     }
 }
 
 /**
  * Speaks the given text using the selected voice.
- * @param {string} text The text to speak.
  */
 function speak(text) {
-    // Forcefully stop any previous speech. This should fix the two-voice bug.
+    // Forcefully stop any previous speech.
     speechSynthesis.cancel();
+    if (!text) return; // Do nothing if text is empty
 
-    if (text) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        const selectedVoiceName = voiceSelect.selectedOptions[0]?.getAttribute('data-name');
-        
-        if (selectedVoiceName) {
-            const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-                // For debugging: In your browser, press F12 and go to the Console tab to see this log
-                console.log('Using voice:', selectedVoice.name);
-            }
-        }
-        
+    const utterance = new SpeechSynthesisUtterance(text);
+    const selectedVoiceName = voiceSelect.selectedOptions[0]?.getAttribute('data-name');
+    const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
+
+    // ONLY speak if we found a valid, selected voice.
+    if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        console.log('Attempting to speak with selected voice:', selectedVoice.name);
         speechSynthesis.speak(utterance);
+    } else {
+        console.log('No specific voice selected or found. Not speaking.');
+        // Intentionally do nothing if no voice is selected
     }
 }
 
@@ -129,17 +119,13 @@ videoThumbnails.forEach(thumbnail => {
 
 // --- TTS Event Listeners ---
 
-// New: Stop TTS button
+// Stop TTS button
 stopTtsBtn.addEventListener('click', () => {
     speechSynthesis.cancel();
 });
 
-genderSelect.addEventListener('change', populateVoiceList);
-
 // Voices are loaded asynchronously, so we must listen for the 'voiceschanged' event.
-speechSynthesis.onvoiceschanged = () => {
-    populateVoiceList();
-};
+speechSynthesis.onvoiceschanged = populateVoiceList;
 
 // Also call it once initially in case the voices are already loaded.
 populateVoiceList();
