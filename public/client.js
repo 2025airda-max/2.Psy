@@ -10,6 +10,7 @@ const genderSelect = document.getElementById('gender-select');
 const voiceSelect = document.getElementById('voice-select');
 const videoUpload = document.getElementById('video-upload');
 const videoThumbnails = document.querySelectorAll('.video-thumbnail');
+const stopTtsBtn = document.getElementById('stop-tts-btn'); // New button
 
 // --- TTS State ---
 let voices = [];
@@ -21,13 +22,11 @@ let voices = [];
  */
 function populateVoiceList() {
     const selectedGender = genderSelect.value;
-    // Voices load asynchronously, so we might need to wait for them
     voices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'ru-RU');
     
     voiceSelect.innerHTML = ''; // Clear existing options
 
     const filteredVoices = voices.filter(voice => {
-        // A simple heuristic to determine gender from voice name
         const voiceNameLower = voice.name.toLowerCase();
         const isFemale = voiceNameLower.includes('female') || voiceNameLower.includes('женский') || voiceNameLower.includes('anna');
         const voiceGender = isFemale ? 'female' : 'male';
@@ -53,11 +52,10 @@ function populateVoiceList() {
  * @param {string} text The text to speak.
  */
 function speak(text) {
-    if (speechSynthesis.speaking) {
-        // Optional: stop the current speech to start a new one
-        speechSynthesis.cancel();
-    }
-    if (text !== '') {
+    // Forcefully stop any previous speech. This should fix the two-voice bug.
+    speechSynthesis.cancel();
+
+    if (text) {
         const utterance = new SpeechSynthesisUtterance(text);
         const selectedVoiceName = voiceSelect.selectedOptions[0]?.getAttribute('data-name');
         
@@ -65,6 +63,8 @@ function speak(text) {
             const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
             if (selectedVoice) {
                 utterance.voice = selectedVoice;
+                // For debugging: In your browser, press F12 and go to the Console tab to see this log
+                console.log('Using voice:', selectedVoice.name);
             }
         }
         
@@ -127,7 +127,13 @@ videoThumbnails.forEach(thumbnail => {
     });
 });
 
-// TTS-related event listeners
+// --- TTS Event Listeners ---
+
+// New: Stop TTS button
+stopTtsBtn.addEventListener('click', () => {
+    speechSynthesis.cancel();
+});
+
 genderSelect.addEventListener('change', populateVoiceList);
 
 // Voices are loaded asynchronously, so we must listen for the 'voiceschanged' event.
